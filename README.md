@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Dictionary Web App
 
 Simple Django-powered dictionary that lets users look up a word and view its
@@ -35,3 +36,6 @@ Visit `http://127.0.0.1:8000/` and search for words like `serendipity`,
 
 
 
+=======
+# Dictionary
+>>>>>>> ed9caa758cc56381cd345da957fcdd6666736bda
