@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary Lookup</title>
+    <link rel="stylesheet" href="{% static 'dict_app/css/style.css' %}">
+</head>
+
+<body>
+    <main class="page">
+        <section class="search-card">
+            <div class="search-header">
+                <h1>Dictionary</h1>
+                <p>Look up meanings, synonyms, antonyms, example sentences, and pronunciation.</p>
+            </div>
+            <form method="POST" class="search-form">
+                {% csrf_token %}
+                <label for="word" class="visually-hidden">Search word</label>
+                <input type="text" name="word" id="word" placeholder="Type a word e.g. resilient"
+                    value="{{ query }}" autofocus>
+                <button type="submit">Search</button>
+            </form>
+            {% if error %}
+            <p class="feedback feedback-error">{{ error }}</p>
+            {% elif result %}
+            <p class="feedback feedback-success">Showing results for "{{ result.word }}".</p>
+            {% else %}
+            <p class="feedback">Try searching for: serendipity, tranquil, innovate.</p>
+            {% endif %}
+        </section>
+
+        {% if result %}
+        <section class="result-card">
+            <header>
+                <h2>{{ result.word|title }}</h2>
+            </header>
+
+            <div class="pronunciation-header">
+                <div class="pronunciation-text-group">
+                    <p class="pronunciation-label">Pronunciation</p>
+                    <p class="pronunciation-text">
+                        {{ result.pronunciation|default:"Not available" }}
+                    </p>
+                </div>
+                <button type="button"
+                    class="pronunciation-play-btn"
+                    data-audio="{{ result.pronunciation_audio }}"
+                    data-word="{{ result.word }}"
+                    aria-label="Play pronunciation for {{ result.word }}"
+                    {% if not result.pronunciation_audio %}disabled{% endif %}>
+                    {% if result.pronunciation_audio %}▶ Play{% else %}Unavailable{% endif %}
+                </button>
+            </div>
+
+            {% if result.meanings %}
+            <div class="result-block">
+                <h3>Meaning</h3>
+                <ul>
+                    {% for meaning in result.meanings %}
+                    <li>{{ meaning }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if result.synonyms %}
+            <div class="result-block">
+                <h3>Synonyms</h3>
+                <div class="chip-row">
+                    {% for synonym in result.synonyms %}
+                    <span class="chip">{{ synonym }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if result.antonyms %}
+            <div class="result-block">
+                <h3>Antonyms</h3>
+                <div class="chip-row chip-row-antonyms">
+                    {% for antonym in result.antonyms %}
+                    <span class="chip">{{ antonym }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if result.examples %}
+            <div class="result-block">
+                <h3>Examples</h3>
+                <ol>
+                    {% for example in result.examples %}
+                    <li>{{ example }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+
+        </section>
+        {% endif %}
+
+    </main>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const playBtn = document.querySelector(".pronunciation-play-btn");
+            if (!playBtn) {
+                return;
+            }
+
+            playBtn.addEventListener("click", function () {
+                const audioSrc = playBtn.getAttribute("data-audio");
+                const word = playBtn.getAttribute("data-word") || "";
+
+                if (audioSrc) {
+                    const audio = new Audio(audioSrc);
+                    audio.play().catch(function () {
+                        alert("Unable to play pronunciation audio.");
+                    });
+                    return;
+                }
+
+                if (!word) {
+                    return;
+                }
+
+                if (!("speechSynthesis" in window)) {
+                    alert("Pronunciation audio unavailable on this browser.");
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = "en-US";
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            });
+        });
+    </script>
+</body>
+
+</html>
+
+
+
+
